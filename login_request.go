@@ -10,5 +10,5 @@ import (
 var login_page string
 
 func LoginRequest(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, login_page)
+	fmt.Fprint(w, login_page)
 }

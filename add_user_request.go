@@ -38,14 +38,14 @@ func AddUserRequestFunction(user string, password string, port int, database str
 		password_hash_hex := md5.Sum([]byte(fmt.Sprintf("%s%d", password, salt)))
 		password_hash := fmt.Sprintf("%x", password_hash_hex)
 
-		query := fmt.Sprintf(
-			"INSERT INTO users (login, salt, password_hash, description) VALUES ('%s', '%d', '%s', '%s');",
-			login, salt, password_hash, description,
-		)
+		query := "INSERT INTO users (login, salt, password_hash, description) VALUES ($1, $2, $3, $4);"
 		fmt.Println(query)
-		err = conn.QueryRow(context.Background(), query).Scan()
+		commandTag, err := conn.Exec(context.Background(), query, login, salt, password_hash, description)
 		if err != nil {
-			log.Fatalf("Unable to insert to database. Error: %s", err)
+			log.Fatalf("unable to insert to database. Error: %s", err)
+		}
+		if commandTag.RowsAffected() != 1 {
+			log.Fatal("no rows were inserted")
 		}
 
 		fmt.Fprintf(w, "Wrote user '%s' data to DB.", login)
