@@ -48,7 +48,7 @@ func AddUserRequestFunction(user string, password string, port int, database str
 			log.Fatalf("unable to create query. Error: %s", err)
 		}
 
-		log.Printf("Running SQL query '%s'", query)
+		log.Printf("Running SQL query '%s' %% %s", query, args)
 
 		commandTag, err := conn.Exec(context.Background(), query, args...)
 		if err != nil {
