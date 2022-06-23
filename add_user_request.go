@@ -12,6 +12,33 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
+type User struct {
+	Id           int    `json:"id"`
+	Login        string `json:"login"`
+	Salt         int    `json:"salt"`
+	PasswordHash string `json:"password_hash"`
+	Description  string `json:"description"`
+}
+
+func RunQuery(connection *pgx.Conn, ctx context.Context, query squirrel.Sqlizer) (pgx.Rows, error) {
+	sqlQuery, args, err := query.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	log.Printf("Running SQL query '%s' %% %s", sqlQuery, args)
+
+	rows, err := connection.Query(ctx, sqlQuery, args...)
+	if err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return rows, nil
+}
+
 func AddUserRequestFunction(user string, password string, port int, database string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		conn, err := pgx.Connect(
@@ -39,25 +66,25 @@ func AddUserRequestFunction(user string, password string, port int, database str
 		password_hash_hex := md5.Sum([]byte(fmt.Sprintf("%s%d", password, salt)))
 		password_hash := fmt.Sprintf("%x", password_hash_hex)
 
-		query, args, err := squirrel.Insert("users").
+		query := squirrel.Insert("users").
 			Columns("login", "salt", "password_hash", "description").
 			Values(login, salt, password_hash, description).
 			PlaceholderFormat(squirrel.Dollar).
-			ToSql()
-		if err != nil {
-			log.Fatalf("unable to create query. Error: %s", err)
-		}
+			Suffix("RETURNING id,login")
 
-		log.Printf("Running SQL query '%s' %% %s", query, args)
-
-		commandTag, err := conn.Exec(context.Background(), query, args...)
+		rows, err := RunQuery(conn, context.Background(), query)
 		if err != nil {
 			log.Fatalf("unable to insert to database. Error: %s", err)
 		}
-		if commandTag.RowsAffected() != 1 {
-			log.Fatal("no rows were inserted")
-		}
 
-		fmt.Fprintf(w, "Wrote user '%s' data to DB.", login)
+		result := User{}
+		for rows.Next() {
+			err := rows.Scan(&result.Id, &result.Login)
+			if err != nil {
+				log.Fatalf("unable to insert to database. Error: %s", err)
+			}
+
+			fmt.Fprintf(w, "Wrote user '%s' data to DB (id: %d).", result.Login, result.Id)
+		}
 	}
 }

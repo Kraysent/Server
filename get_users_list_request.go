@@ -22,29 +22,19 @@ func GetUsersRequestFunction(user string, password string, port int, database st
 		}
 		defer conn.Close(context.Background())
 
-		query := squirrel.Select("login").
-			From("users")
+		query := squirrel.Select("login").From("users")
 
 		login := r.URL.Query().Get("login")
 		if login != "" {
 			query = query.Where(squirrel.Eq{
-				"login": []string{ login },
+				"login": []string{login},
 			})
 		}
 
-		sqlQuery, args, err := query.PlaceholderFormat(squirrel.Dollar).
-			ToSql()
-		if err != nil {
-			log.Fatalf("unable to construct SQL query. Error: %s", err)
-		}
+		query = query.PlaceholderFormat(squirrel.Dollar)
 
-		log.Printf("Running SQL query '%s' %% %s", sqlQuery, args)
-
-		rows, err := conn.Query(context.Background(), sqlQuery, args...)
+		rows, err := RunQuery(conn, context.Background(), query)
 		if err != nil {
-			log.Fatalf("unable to select from database. Error: %s", err)
-		}
-		if err := rows.Err(); err != nil {
 			log.Fatalf("unable to select from database. Error: %s", err)
 		}
 
