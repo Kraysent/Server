@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4"
 )
 
@@ -38,9 +39,18 @@ func AddUserRequestFunction(user string, password string, port int, database str
 		password_hash_hex := md5.Sum([]byte(fmt.Sprintf("%s%d", password, salt)))
 		password_hash := fmt.Sprintf("%x", password_hash_hex)
 
-		query := "INSERT INTO users (login, salt, password_hash, description) VALUES ($1, $2, $3, $4);"
-		fmt.Println(query)
-		commandTag, err := conn.Exec(context.Background(), query, login, salt, password_hash, description)
+		query, args, err := squirrel.Insert("users").
+			Columns("login", "salt", "password_hash", "description").
+			Values(login, salt, password_hash, description).
+			PlaceholderFormat(squirrel.Dollar).
+			ToSql()
+		if err != nil {
+			log.Fatalf("unable to create query. Error: %s", err)
+		}
+
+		log.Printf("Running SQL query '%s'", query)
+
+		commandTag, err := conn.Exec(context.Background(), query, args...)
 		if err != nil {
 			log.Fatalf("unable to insert to database. Error: %s", err)
 		}
