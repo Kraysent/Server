@@ -43,7 +43,7 @@ func AddUserRequestFunction(user string, password string, port int, database str
 	return func(w http.ResponseWriter, r *http.Request) {
 		conn, err := pgx.Connect(
 			context.Background(),
-			fmt.Sprintf("postgres://%s:%s@localhost:%d/%s", user, password, port, database),
+			fmt.Sprintf("host=localhost port=%d user=%s password=%s dbname=%s sslmode=disable", port, user, password, database),
 		)
 		if err != nil {
 			log.Fatalf("Unable to connect to database. Error: %s", err)
