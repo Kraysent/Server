@@ -25,11 +25,12 @@ type LoginResponse struct {
 }
 
 func LoginRequest(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+	w.Header().Set("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
+
 	// CORS Request
 	if r.Method == http.MethodOptions {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
-		w.Header().Set("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
 		w.WriteHeader(http.StatusOK)
 		return
 	}
@@ -44,21 +45,7 @@ func LoginRequest(w http.ResponseWriter, r *http.Request) {
 
 	err = json.Unmarshal(bodyRaw, &creds)
 	if err != nil {
-		responseBody, err := json.Marshal(&LoginResponse{
-			Message: fmt.Sprintf("Error during request parsing: %s", err.Error()),
-		})
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		w.Header().Set(contentTypeHeader, jsonContentType)
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
-		w.Header().Set("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write(responseBody)
-
-		return
+		log.Fatal(err)
 	}
 
 	responseBody, err := json.Marshal(&LoginResponse{
@@ -69,9 +56,6 @@ func LoginRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set(contentTypeHeader, jsonContentType)
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
-	w.Header().Set("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
 	w.WriteHeader(http.StatusNotImplemented)
 	w.Write(responseBody)
 }
