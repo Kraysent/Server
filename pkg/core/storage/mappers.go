@@ -14,7 +14,15 @@ const (
 
 func scanUser(rows pgx.Rows) (entities.User, error) {
 	var result entities.User
-	err := rows.Scan(&result.ID, &result.Login, &result.Salt, &result.PasswordHash, &result.Description)
+	err := rows.Scan(
+		&result.ID,
+		&result.Login,
+		&result.Salt,
+		&result.PasswordHash,
+		&result.Description,
+		&result.CityID,
+		&result.RegistrationDate,
+	)
 
 	if err != nil {
 		return entities.User{}, err
@@ -63,7 +71,7 @@ func (s *Storage) Create(user entities.User) (*entities.User, error) {
 		Columns("login", "salt", "password_hash", "description").
 		Values(user.Login, user.Salt, user.PasswordHash, user.Description).
 		PlaceholderFormat(squirrel.Dollar).
-		Suffix("RETURNING id,login,salt,password_hash,description")
+		Suffix("RETURNING id,login,salt,password_hash,description,city,registration_date")
 
 	rows, err := s.runQuery(context.Background(), query)
 	if err != nil {

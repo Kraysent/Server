@@ -2,17 +2,20 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"net/http"
 	"os"
 	"server/pkg/cmd"
 	"server/pkg/core"
 	db "server/pkg/core/storage"
+	"time"
 
 	"github.com/rs/zerolog"
 	zlog "github.com/rs/zerolog/log"
 )
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
 	config, err := core.NewConfig("configs/dev.yaml")
 	if err != nil {
 		zlog.Fatal().Err(err).Msg("Error during config loading.")

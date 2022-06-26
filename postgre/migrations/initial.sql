@@ -1,8 +1,25 @@
-CREATE TABLE users 
-(
-    id BIGSERIAL PRIMARY KEY,
-    login TEXT NOT NULL,
-    salt BIGSERIAL NOT NULL,
+CREATE TABLE countries (
+    id SERIAL PRIMARY KEY,
+    code TEXT NOT NULL
+);
+CREATE TABLE cities (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    country_id BIGINT REFERENCES countries(id)
+);
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    login TEXT NOT NULL UNIQUE,
+    salt BIGINT NOT NULL,
     password_hash TEXT NOT NULL,
-    description TEXT DEFAULT 'test'
+    description TEXT DEFAULT 'test',
+    city BIGINT REFERENCES cities(id),
+    registration_date TIMESTAMP DEFAULT NOW()
+);
+CREATE TABLE tokens (
+    id SERIAL,
+    login BIGINT REFERENCES users(id),
+    value TEXT NOT NULL,
+    start_date TIMESTAMP DEFAULT NOW(),
+    expiration_date TIMESTAMP NOT NULL
 );
