@@ -34,6 +34,7 @@ func main() {
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) { fmt.Fprintf(w, "pong") })
 	http.HandleFunc("/login", cmd.LoginRequestFunction(storage))
 	http.HandleFunc("/register", cmd.RegisterRequestFunction(storage))
+	http.HandleFunc("/profile", cmd.ProfileRequestFunction(storage))
 
 	// Admin handlers
 	http.HandleFunc("/get_user", cmd.GetUserByLoginRequestFunction(storage))
