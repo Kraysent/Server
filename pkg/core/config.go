@@ -1,22 +1,20 @@
 package core
 
 import (
-	"context"
+	"io/ioutil"
 	db "server/pkg/core/storage"
 
-	"github.com/heetch/confita"
-	"github.com/heetch/confita/backend/env"
-	"github.com/heetch/confita/backend/file"
+	"gopkg.in/yaml.v3"
 )
 
 type ServerConfig struct {
-	Port  int    `config:"port,required"`
-	Level string `config:"level"`
+	Port  int    `yaml:"port"`
+	Level string `yaml:"level"`
 }
 
 type Config struct {
-	Storage db.StorageConfig `config:"storage"`
-	Server  ServerConfig     `config:"server"`
+	Storage db.StorageConfig `yaml:"storage"`
+	Server  ServerConfig     `yaml:"server"`
 }
 
 func NewConfig(configFilename string) (Config, error) {
@@ -26,11 +24,12 @@ func NewConfig(configFilename string) (Config, error) {
 		},
 	}
 
-	loader := confita.NewLoader(
-		file.NewBackend("configs/dev.yaml"),
-		env.NewBackend(),
-	)
-	err := loader.Load(context.Background(), &config)
+	configFile, err := ioutil.ReadFile(configFilename)
+	if err != nil {
+		return Config{}, err
+	}
+
+	err = yaml.Unmarshal(configFile, &config)
 	if err != nil {
 		return Config{}, err
 	}

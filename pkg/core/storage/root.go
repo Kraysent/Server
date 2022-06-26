@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4"
@@ -15,12 +16,13 @@ type Storage struct {
 }
 
 type StorageConfig struct {
-	DSN      string `config:"dsn"`
-	Host     string `config:"host"`
-	User     string `config:"user"`
-	Password string `config:"password"`
-	Port     int    `config:"port"`
-	DBName   string `config:"dbname"`
+	DSN      string        `yaml:"dsn"`
+	Host     string        `yaml:"host"`
+	User     string        `yaml:"user"`
+	Password string        `yaml:"password"`
+	Port     int           `yaml:"port"`
+	DBName   string        `yaml:"dbname"`
+	Token    time.Duration `yaml:"tokenttl"`
 }
 
 func (s *Storage) Connect() error {

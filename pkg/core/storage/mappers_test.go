@@ -23,19 +23,19 @@ func (s *MapperTestSuite) SetupTest() {
 	s.storage = NewStorage(config)
 	s.storage.Connect()
 
-	_, _ = s.storage.Create(entities.User{
+	_, _ = s.storage.CreateUser(entities.User{
 		Login:        "test1",
 		Salt:         1,
 		PasswordHash: "weak_hash",
 		Description:  "weak desc",
 	})
-	_, _ = s.storage.Create(entities.User{
+	_, _ = s.storage.CreateUser(entities.User{
 		Login:        "test2",
 		Salt:         2,
 		PasswordHash: "middle_hash",
 		Description:  "middle desc",
 	})
-	_, _ = s.storage.Create(entities.User{
+	_, _ = s.storage.CreateUser(entities.User{
 		Login:        "test3",
 		Salt:         3,
 		PasswordHash: "strong_hash",
@@ -44,7 +44,7 @@ func (s *MapperTestSuite) SetupTest() {
 }
 
 func (s *MapperTestSuite) TestGet() {
-	actual, _ := s.storage.Get("test2")
+	actual, _ := s.storage.GetUser("test2")
 	assert.Equal(s.T(), entities.User{
 		ID:           2,
 		Login:        "test2",

@@ -20,7 +20,7 @@ func GetUser(storage *db.Storage, login string) (*entities.User, error) {
 	}
 	defer storage.Disconnect()
 
-	return storage.Get(login)
+	return storage.GetUser(login)
 }
 
 func CreateUser(storage *db.Storage, login string, password string, description string) (*entities.User, error) {
@@ -29,12 +29,12 @@ func CreateUser(storage *db.Storage, login string, password string, description 
 		return nil, err
 	}
 	defer storage.Disconnect()
-	
+
 	salt := rand.Intn(1000000)
 	passwordHashHex := md5.Sum([]byte(fmt.Sprintf("%s%d", password, salt)))
 	passwordHash := fmt.Sprintf("%x", passwordHashHex)
 
-	user, err := storage.Create(entities.User{
+	user, err := storage.CreateUser(entities.User{
 		Login:        login,
 		Salt:         salt,
 		PasswordHash: passwordHash,

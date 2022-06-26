@@ -44,6 +44,15 @@ func RegisterRequestFunction(storage *db.Storage) func(w http.ResponseWriter, r 
 			return
 		}
 
+		token, err := actions.IssueToken(storage, creds.Login)
+		if err != nil {
+			SendResponse(w, http.StatusInternalServerError, nil, err, "Error during token issue.")
+		}
+
+		http.SetCookie(w, &http.Cookie{
+			Name:  "token",
+			Value: token,
+		})
 		SendResponse(w, http.StatusOK, nil, nil, "")
 	}
 }

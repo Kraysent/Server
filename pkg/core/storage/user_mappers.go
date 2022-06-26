@@ -31,7 +31,7 @@ func scanUser(rows pgx.Rows) (entities.User, error) {
 	return result, err
 }
 
-func (s *Storage) Find(login string) ([]entities.User, error) {
+func (s *Storage) FindUsers(login string) ([]entities.User, error) {
 	query := squirrel.Select("*").
 		From(usersTableName).
 		Where(squirrel.Eq{"login": login}).
@@ -56,8 +56,8 @@ func (s *Storage) Find(login string) ([]entities.User, error) {
 	return users, nil
 }
 
-func (s *Storage) Get(login string) (*entities.User, error) {
-	users, err := s.Find(login)
+func (s *Storage) GetUser(login string) (*entities.User, error) {
+	users, err := s.FindUsers(login)
 
 	if len(users) >= 1 {
 		return &users[0], err
@@ -66,7 +66,7 @@ func (s *Storage) Get(login string) (*entities.User, error) {
 	}
 }
 
-func (s *Storage) Create(user entities.User) (*entities.User, error) {
+func (s *Storage) CreateUser(user entities.User) (*entities.User, error) {
 	query := squirrel.Insert(usersTableName).
 		Columns("login", "salt", "password_hash", "description").
 		Values(user.Login, user.Salt, user.PasswordHash, user.Description).

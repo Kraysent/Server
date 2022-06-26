@@ -60,6 +60,16 @@ func LoginRequestFunction(storage *db.Storage) func(w http.ResponseWriter, r *ht
 		if foundUser.PasswordHash != actions.HashPassword(creds.Password, foundUser.Salt) {
 			SendResponse(w, http.StatusUnauthorized, nil, nil, "")
 		} else {
+			token, err := actions.IssueToken(storage, creds.Login)
+			if err != nil {
+				SendResponse(w, http.StatusInternalServerError, nil, err, "Error during token issue.")
+			}
+	
+			http.SetCookie(w, &http.Cookie{
+				Name:  "token",
+				Value: token,
+			})
+			
 			SendResponse(w, http.StatusOK, nil, nil, "")
 		}
 	}
