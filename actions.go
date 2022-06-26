@@ -6,6 +6,11 @@ import (
 	"math/rand"
 )
 
+func HashPassword(password string, salt int) string {
+	passwordHashHex := md5.Sum([]byte(fmt.Sprintf("%s%d", password, salt)))
+	return fmt.Sprintf("%x", passwordHashHex)
+}
+
 func CreateUser(login string, password string, description string) (*User, error) {
 	salt := rand.Intn(1000000)
 	passwordHashHex := md5.Sum([]byte(fmt.Sprintf("%s%d", password, salt)))

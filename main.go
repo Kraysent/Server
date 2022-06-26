@@ -12,7 +12,6 @@ const (
 
 func main() {
 	// Common handlers
-	http.HandleFunc("/", RootRequest)
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) { fmt.Fprintf(w, "pong") })
 	http.HandleFunc("/login", LoginRequest)
 	http.HandleFunc("/register", RegisterRequest)

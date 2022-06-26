@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "embed"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -28,6 +27,7 @@ func LoginRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
 	w.Header().Set("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
+	w.Header().Set(contentTypeHeader, jsonContentType)
 
 	// CORS Request
 	if r.Method == http.MethodOptions {
@@ -35,27 +35,37 @@ func LoginRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	creds := LoginCreds{}
 	bodyRaw, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Fatal(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		resp, _ := json.Marshal(RegisterResponse{Message: err.Error()})
+		w.Write(resp)
+		log.Println(err)
+		return
 	}
 
-	fmt.Print(string(bodyRaw))
-
+	creds := LoginCreds{}
 	err = json.Unmarshal(bodyRaw, &creds)
 	if err != nil {
-		log.Fatal(err)
+		w.WriteHeader(http.StatusBadRequest)
+		resp, _ := json.Marshal(RegisterResponse{Message: err.Error()})
+		w.Write(resp)
+		log.Printf("%s: %s", err, string(bodyRaw))
+		return
 	}
 
-	responseBody, err := json.Marshal(&LoginResponse{
-		Message: "Not implemented yet",
-	})
+	foundUser, err := Get(creds.Login)
 	if err != nil {
-		log.Fatal(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		resp, _ := json.Marshal(RegisterResponse{Message: fmt.Sprintf("User not found: %s", err.Error())})
+		w.Write(resp)
+		log.Printf("%s: %s", err, string(bodyRaw))
+		return
 	}
 
-	w.Header().Set(contentTypeHeader, jsonContentType)
-	w.WriteHeader(http.StatusNotImplemented)
-	w.Write(responseBody)
+	if foundUser.PasswordHash != HashPassword(creds.Password, foundUser.Salt) {
+		w.WriteHeader(http.StatusUnauthorized)
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
 }
