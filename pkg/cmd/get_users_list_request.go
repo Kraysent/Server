@@ -1,8 +1,7 @@
 package cmd
 
 import (
-	"encoding/json"
-	"log"
+	zlog "github.com/rs/zerolog/log"
 	"net/http"
 	"server/pkg/storage"
 )
@@ -12,13 +11,8 @@ func GetUserByLoginRequest(w http.ResponseWriter, r *http.Request) {
 
 	user, err := storage.Get(login)
 	if err != nil {
-		log.Fatal(err)
+		zlog.Error().Err(err).Send()
 	}
 
-	body, err := json.Marshal(user)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	w.Write(body)
+	SendResponse(w, http.StatusOK, user, nil, "")
 }

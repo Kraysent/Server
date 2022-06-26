@@ -3,11 +3,11 @@ package storage
 import (
 	"context"
 	"fmt"
-	"log"
 	"server/pkg/entities"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4"
+	zlog "github.com/rs/zerolog/log"
 )
 
 const (
@@ -24,7 +24,7 @@ func runQuery(connection *pgx.Conn, ctx context.Context, query squirrel.Sqlizer)
 		return nil, err
 	}
 
-	log.Printf("Running SQL query '%s' %% %s", sqlQuery, args)
+	zlog.Debug().Str("query", sqlQuery).Interface("args", args).Msg("Run query")
 
 	rows, err := connection.Query(ctx, sqlQuery, args...)
 	if err != nil {

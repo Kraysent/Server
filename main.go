@@ -2,9 +2,12 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
+	"os"
 	"server/pkg/cmd"
+
+	"github.com/rs/zerolog"
+	zlog "github.com/rs/zerolog/log"
 )
 
 const (
@@ -12,6 +15,9 @@ const (
 )
 
 func main() {
+	zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	zlog.Logger = zlog.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+
 	// Common handlers
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) { fmt.Fprintf(w, "pong") })
 	http.HandleFunc("/login", cmd.LoginRequest)
@@ -20,6 +26,9 @@ func main() {
 	// Admin handlers
 	http.HandleFunc("/get_user", cmd.GetUserByLoginRequest)
 
-	log.Printf("Listening on http://127.0.0.1:%d", port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
+	zlog.Info().Str("address", fmt.Sprintf("http://127.0.0.1:%d", port)).Msg("Server is listening")
+	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+	if err != nil {
+		zlog.Fatal().Err(err).Msg("Error occured during listening")
+	}
 }

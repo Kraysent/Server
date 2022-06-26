@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/Masterminds/squirrel v1.5.3
 	github.com/jackc/pgx/v4 v4.16.1
+	github.com/rs/zerolog v1.15.0
 )
 
 require (
@@ -17,6 +18,7 @@ require (
 	github.com/jackc/pgtype v1.11.0 // indirect
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
 	golang.org/x/text v0.3.7 // indirect
 )
