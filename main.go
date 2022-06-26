@@ -17,7 +17,6 @@ func main() {
 	http.HandleFunc("/register", RegisterRequest)
 
 	// Admin handlers
-	http.HandleFunc("/add_user", AddUserRequest)
 	http.HandleFunc("/get_user", GetUserByLoginRequest)
 
 	log.Printf("Listening on http://127.0.0.1:%d", port)
