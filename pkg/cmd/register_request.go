@@ -1,29 +1,24 @@
-package main
+package cmd
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"server/pkg/actions"
 )
 
-const (
-	contentTypeHeader = "Content-Type"
-
-	jsonContentType = "application/json"
-)
-
-type LoginCreds struct {
-	Login    string `json:"login"`
-	Password string `json:"password"`
+type RegisterCreds struct {
+	Login       string `json:"login"`
+	Password    string `json:"password"`
+	Description string `json:"description"`
 }
 
-type LoginResponse struct {
+type RegisterResponse struct {
 	Message string `json:"message"`
 }
 
-func LoginRequest(w http.ResponseWriter, r *http.Request) {
+func RegisterRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
 	w.Header().Set("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
@@ -44,7 +39,7 @@ func LoginRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	creds := LoginCreds{}
+	creds := RegisterCreds{}
 	err = json.Unmarshal(bodyRaw, &creds)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -54,18 +49,14 @@ func LoginRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	foundUser, err := Get(creds.Login)
+	_, err = actions.CreateUser(creds.Login, creds.Password, creds.Description)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		resp, _ := json.Marshal(RegisterResponse{Message: fmt.Sprintf("User not found: %s", err.Error())})
+		resp, _ := json.Marshal(RegisterResponse{Message: err.Error()})
 		w.Write(resp)
 		log.Printf("%s: %s", err, string(bodyRaw))
 		return
 	}
 
-	if foundUser.PasswordHash != HashPassword(creds.Password, foundUser.Salt) {
-		w.WriteHeader(http.StatusUnauthorized)
-	} else {
-		w.WriteHeader(http.StatusOK)
-	}
+	w.WriteHeader(http.StatusOK)
 }

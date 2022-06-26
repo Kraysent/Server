@@ -1,9 +1,10 @@
-package main
+package storage
 
 import (
 	"context"
 	"fmt"
 	"log"
+	"server/pkg/entities"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4"
@@ -36,18 +37,18 @@ func runQuery(connection *pgx.Conn, ctx context.Context, query squirrel.Sqlizer)
 	return rows, nil
 }
 
-func scanUser(rows pgx.Rows) (User, error) {
-	var result User
+func scanUser(rows pgx.Rows) (entities.User, error) {
+	var result entities.User
 	err := rows.Scan(&result.ID, &result.Login, &result.Salt, &result.PasswordHash, &result.Description)
 
 	if err != nil {
-		return User{}, err
+		return entities.User{}, err
 	}
 
 	return result, err
 }
 
-func Find(login string) ([]User, error) {
+func Find(login string) ([]entities.User, error) {
 	conn, err := pgx.Connect(
 		context.Background(),
 		fmt.Sprintf(
@@ -71,7 +72,7 @@ func Find(login string) ([]User, error) {
 	}
 	defer rows.Close()
 
-	users := make([]User, 0)
+	users := make([]entities.User, 0)
 	for rows.Next() {
 		user, err := scanUser(rows)
 		if err != nil {
@@ -84,7 +85,7 @@ func Find(login string) ([]User, error) {
 	return users, nil
 }
 
-func Get(login string) (*User, error) {
+func Get(login string) (*entities.User, error) {
 	users, err := Find(login)
 
 	if len(users) >= 1 {
@@ -94,7 +95,7 @@ func Get(login string) (*User, error) {
 	}
 }
 
-func Create(user User) (*User, error) {
+func Create(user entities.User) (*entities.User, error) {
 	conn, err := pgx.Connect(
 		context.Background(),
 		fmt.Sprintf(
@@ -119,7 +120,7 @@ func Create(user User) (*User, error) {
 	}
 	defer rows.Close()
 
-	var result User
+	var result entities.User
 	for rows.Next() {
 		result, err = scanUser(rows)
 		if err != nil {
