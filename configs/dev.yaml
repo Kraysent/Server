@@ -1,0 +1,10 @@
+server:
+  port: 8081
+  level: debug
+
+storage:
+  host: localhost
+  user: testserver
+  password: passw0rd
+  port: 5432
+  dbname: serverdb

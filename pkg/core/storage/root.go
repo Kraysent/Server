@@ -15,22 +15,27 @@ type Storage struct {
 }
 
 type StorageConfig struct {
-	User     string
-	Password string
-	Port     int
-	DBName   string
+	DSN      string `config:"dsn"`
+	Host     string `config:"host"`
+	User     string `config:"user"`
+	Password string `config:"password"`
+	Port     int    `config:"port"`
+	DBName   string `config:"dbname"`
 }
 
 func (s *Storage) Connect() error {
-	conn, err := pgx.Connect(
-		context.Background(),
-		fmt.Sprintf(
-			"host=localhost port=%d user=%s password=%s dbname=%s sslmode=disable",
-			s.Config.Port, s.Config.User, s.Config.Password, s.Config.DBName,
-		),
-	)
+	var connectionString string
 
+	if connectionString = s.Config.DSN; connectionString == "" {
+		connectionString = fmt.Sprintf(
+			"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+			s.Config.Host, s.Config.Port, s.Config.User, s.Config.Password, s.Config.DBName,
+		)
+	}
+
+	conn, err := pgx.Connect(context.Background(), connectionString)
 	s.connection = conn
+
 	return err
 }
 

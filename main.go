@@ -5,26 +5,27 @@ import (
 	"net/http"
 	"os"
 	"server/pkg/cmd"
+	"server/pkg/core"
 	db "server/pkg/core/storage"
 
 	"github.com/rs/zerolog"
 	zlog "github.com/rs/zerolog/log"
 )
 
-const (
-	serverPort = 8081
-)
-
 func main() {
-	zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	config, err := core.NewConfig("configs/dev.yaml")
+	if err != nil {
+		zlog.Fatal().Err(err).Msg("Error during config loading.")
+	}
+
+	level, err := zerolog.ParseLevel(config.Server.Level)
+	if err != nil {
+		level = zerolog.DebugLevel
+	}
+	zerolog.SetGlobalLevel(level)
 	zlog.Logger = zlog.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
-	storage := db.NewStorage(db.StorageConfig{
-		User:     "testserver",
-		Password: "passw0rd",
-		Port:     5432,
-		DBName:   "serverdb",
-	})
+	storage := db.NewStorage(config.Storage)
 
 	// Common handlers
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) { fmt.Fprintf(w, "pong") })
@@ -34,8 +35,8 @@ func main() {
 	// Admin handlers
 	http.HandleFunc("/get_user", cmd.GetUserByLoginRequestFunction(storage))
 
-	zlog.Info().Str("address", fmt.Sprintf("http://127.0.0.1:%d", serverPort)).Msg("Server is listening")
-	err := http.ListenAndServe(fmt.Sprintf(":%d", serverPort), nil)
+	zlog.Info().Str("address", fmt.Sprintf("http://127.0.0.1:%d", config.Server.Port)).Msg("Server is listening")
+	err = http.ListenAndServe(fmt.Sprintf(":%d", config.Server.Port), nil)
 	if err != nil {
 		zlog.Fatal().Err(err).Msg("Error occured during listening")
 	}
