@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"server/pkg/actions"
-	"server/pkg/storage"
+	"server/pkg/core/actions"
+	db "server/pkg/core/storage"
 
 	zlog "github.com/rs/zerolog/log"
 )
@@ -25,40 +25,43 @@ type LoginResponse struct {
 	Message string `json:"message"`
 }
 
-func LoginRequest(w http.ResponseWriter, r *http.Request) {
-	bodyRaw, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		SendResponse(w, http.StatusInternalServerError, LoginResponse{Message: err.Error()}, err, "")
-		return
+func LoginRequestFunction(storage *db.Storage) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		bodyRaw, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			SendResponse(w, http.StatusInternalServerError, LoginResponse{Message: err.Error()}, err, "")
+			return
+		}
+
+		zlog.Debug().Bytes("request_body", bodyRaw).Str("method", r.Method).Send()
+
+		if r.Method == http.MethodOptions {
+			SendResponse(w, http.StatusOK, nil, nil, "CORS Request processing.")
+			return
+		}
+
+		creds := LoginCreds{}
+		err = json.Unmarshal(bodyRaw, &creds)
+		if err != nil {
+			SendResponse(w, http.StatusBadRequest, LoginResponse{Message: err.Error()}, err, "")
+			return
+		}
+
+		foundUser, err := actions.GetUser(storage, creds.Login)
+		if err != nil {
+			SendResponse(w, http.StatusInternalServerError, LoginResponse{Message: err.Error()}, err, "")
+			return
+		}
+		if foundUser == nil {
+			SendResponse(w, http.StatusUnauthorized, nil, nil, "")
+			return
+		}
+
+		if foundUser.PasswordHash != actions.HashPassword(creds.Password, foundUser.Salt) {
+			SendResponse(w, http.StatusUnauthorized, nil, nil, "")
+		} else {
+			SendResponse(w, http.StatusOK, nil, nil, "")
+		}
 	}
 
-	zlog.Debug().Bytes("request_body", bodyRaw).Str("method", r.Method).Send()
-
-	if r.Method == http.MethodOptions {
-		SendResponse(w, http.StatusOK, nil, nil, "CORS Request processing.")
-		return
-	}
-
-	creds := LoginCreds{}
-	err = json.Unmarshal(bodyRaw, &creds)
-	if err != nil {
-		SendResponse(w, http.StatusBadRequest, LoginResponse{Message: err.Error()}, err, "")
-		return
-	}
-
-	foundUser, err := storage.Get(creds.Login)
-	if err != nil {
-		SendResponse(w, http.StatusInternalServerError, LoginResponse{Message: err.Error()}, err, "")
-		return
-	}
-	if foundUser == nil {
-		SendResponse(w, http.StatusUnauthorized, nil, nil, "")
-		return
-	}
-
-	if foundUser.PasswordHash != actions.HashPassword(creds.Password, foundUser.Salt) {
-		SendResponse(w, http.StatusUnauthorized, nil, nil, "")
-	} else {
-		SendResponse(w, http.StatusOK, nil, nil, "")
-	}
 }
