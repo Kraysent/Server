@@ -8,4 +8,4 @@ storage:
   password: passw0rd
   port: 5432
   dbname: serverdb
-  tokenttl: 2m
+  tokenttl: 30m

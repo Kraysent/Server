@@ -8,6 +8,6 @@ type User struct {
 	Salt             int       `json:"salt"`
 	PasswordHash     string    `json:"password_hash"`
 	Description      string    `json:"description"`
-	CityID           *int       `json:"city"`
+	CityID           int       `json:"city"`
 	RegistrationDate time.Time `json:"registration_date"`
 }

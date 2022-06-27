@@ -2,39 +2,74 @@ package storage
 
 import (
 	"context"
+	"database/sql"
 	"server/pkg/core/entities"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4"
 )
 
-const (
-	usersTableName = "users"
-)
+type UsersFindParams struct {
+	ID               *int
+	Login            *string
+	Description      *string
+	CityID           *int
+	RegistrationDate *time.Time
+}
+
+type UserCreateParams struct {
+	Login            string
+	Salt             int
+	PasswordHash     string
+	Description      *string
+	CityID           *int
+	RegistrationDate *time.Time
+}
 
 func scanUser(rows pgx.Rows) (entities.User, error) {
 	var result entities.User
+	var cityID sql.NullInt32
+
 	err := rows.Scan(
 		&result.ID,
 		&result.Login,
 		&result.Salt,
 		&result.PasswordHash,
 		&result.Description,
-		&result.CityID,
+		&cityID,
 		&result.RegistrationDate,
 	)
-
 	if err != nil {
 		return entities.User{}, err
 	}
 
+	result.CityID = int(cityID.Int32)
+
 	return result, err
 }
 
-func (s *Storage) FindUsers(login string) ([]entities.User, error) {
+func (s *Storage) FindUsers(params UsersFindParams) ([]entities.User, error) {
+	condition := squirrel.And{}
+	if params.ID != nil {
+		condition = append(condition, squirrel.Eq{"id": params.ID})
+	}
+	if params.Login != nil {
+		condition = append(condition, squirrel.Eq{"login": params.Login})
+	}
+	if params.Description != nil {
+		condition = append(condition, squirrel.Eq{"description": params.Description})
+	}
+	if params.CityID != nil {
+		condition = append(condition, squirrel.Eq{"city_id": params.CityID})
+	}
+	if params.RegistrationDate != nil {
+		condition = append(condition, squirrel.Eq{"registration_date": params.RegistrationDate})
+	}
+
 	query := squirrel.Select("*").
 		From(usersTableName).
-		Where(squirrel.Eq{"login": login}).
+		Where(condition).
 		PlaceholderFormat(squirrel.Dollar)
 
 	rows, err := s.runQuery(context.Background(), query)
@@ -56,22 +91,42 @@ func (s *Storage) FindUsers(login string) ([]entities.User, error) {
 	return users, nil
 }
 
-func (s *Storage) GetUser(login string) (*entities.User, error) {
-	users, err := s.FindUsers(login)
+func (s *Storage) GetUser(params UsersFindParams) (*entities.User, error) {
+	users, err := s.FindUsers(params)
+
+	if err != nil {
+		return nil, err
+	}
 
 	if len(users) >= 1 {
-		return &users[0], err
+		return &users[0], nil
 	} else {
-		return nil, err
+		return nil, nil
 	}
 }
 
-func (s *Storage) CreateUser(user entities.User) (*entities.User, error) {
+func (s *Storage) CreateUser(params UserCreateParams) (*entities.User, error) {
+	columns := []string{"login", "salt", "password_hash"}
+	values := []any{params.Login, params.Salt, params.PasswordHash}
+
+	if params.Description != nil {
+		columns = append(columns, "description")
+		values = append(values, &params.Description)
+	}
+	if params.CityID != nil {
+		columns = append(columns, "city")
+		values = append(values, &params.CityID)
+	}
+	if params.RegistrationDate != nil {
+		columns = append(columns, "registration_date")
+		values = append(values, &params.RegistrationDate)
+	}
+
 	query := squirrel.Insert(usersTableName).
-		Columns("login", "salt", "password_hash", "description").
-		Values(user.Login, user.Salt, user.PasswordHash, user.Description).
-		PlaceholderFormat(squirrel.Dollar).
-		Suffix("RETURNING id,login,salt,password_hash,description,city,registration_date")
+		Columns(columns...).
+		Values(values...).
+		Suffix("RETURNING *").
+		PlaceholderFormat(squirrel.Dollar)
 
 	rows, err := s.runQuery(context.Background(), query)
 	if err != nil {

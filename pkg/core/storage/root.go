@@ -10,6 +10,13 @@ import (
 	zlog "github.com/rs/zerolog/log"
 )
 
+const (
+	countriesTableName = "countries"
+	cititesTableName   = "cities"
+	tokensTableName    = "tokens"
+	usersTableName     = "users"
+)
+
 type Storage struct {
 	Config     StorageConfig
 	connection *pgx.Conn

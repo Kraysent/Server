@@ -7,10 +7,6 @@ import (
 	"github.com/Masterminds/squirrel"
 )
 
-const (
-	tokensTableName = "tokens"
-)
-
 func (s *Storage) CreateToken(user_id int, value string, ttl time.Duration) (string, error) {
 	query := squirrel.Insert(tokensTableName).
 		Columns("login", "value", "start_date", "expiration_date").

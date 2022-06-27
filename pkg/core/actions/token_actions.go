@@ -1,10 +1,7 @@
 package actions
 
 import (
-	"crypto/md5"
-	"fmt"
 	"golang.org/x/exp/slices"
-	"math/rand"
 	db "server/pkg/core/storage"
 )
 
@@ -15,11 +12,11 @@ func IssueToken(storage *db.Storage, login string) (string, error) {
 	}
 	defer storage.Disconnect()
 
-	rnd := rand.Int()
-	tokenBytes := md5.Sum([]byte(fmt.Sprint(rnd)))
-	token := fmt.Sprintf("%x", tokenBytes)
+	token := GenerateToken(nil)
 
-	user, err := storage.GetUser(login)
+	user, err := storage.GetUser(db.UsersFindParams{
+		Login: &login,
+	})
 	if err != nil {
 		return "", err
 	}
@@ -39,7 +36,9 @@ func CheckUserToken(storage *db.Storage, login string, token string) (bool, erro
 	}
 	defer storage.Disconnect()
 
-	user, err := storage.GetUser(login)
+	user, err := storage.GetUser(db.UsersFindParams{
+		Login: &login,
+	})
 	if err != nil {
 		return false, err
 	}
