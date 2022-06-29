@@ -12,7 +12,8 @@ func GetUserByLoginRequestFunction(storage *db.Storage) func(w http.ResponseWrit
 	return func(w http.ResponseWriter, r *http.Request) {
 		login := r.URL.Query().Get("login")
 
-		user, err := actions.GetUser(storage, login)
+		action := actions.NewStorageAction(storage)
+		user, err := action.GetUser(login)
 		if err != nil {
 			zlog.Error().Err(err).Send()
 		}

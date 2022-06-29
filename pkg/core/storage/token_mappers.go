@@ -14,7 +14,7 @@ func (s *Storage) CreateToken(user_id int, value string, ttl time.Duration) (str
 		PlaceholderFormat(squirrel.Dollar).
 		Suffix("RETURNING value")
 
-	rows, err := s.runQuery(context.Background(), query)
+	rows, err := s.RunQuery(context.Background(), query)
 	if err != nil {
 		return "", err
 	}
@@ -39,7 +39,7 @@ func (s *Storage) FindValidTokens(user_id int) ([]string, error) {
 		Where(squirrel.Eq{"login": user_id}).
 		PlaceholderFormat(squirrel.Dollar)
 
-	rows, err := s.runQuery(context.Background(), query)
+	rows, err := s.RunQuery(context.Background(), query)
 	if err != nil {
 		return nil, err
 	}

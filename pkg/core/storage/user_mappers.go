@@ -62,7 +62,7 @@ func (s *Storage) FindUsers(params UsersFindParams) ([]entities.User, error) {
 		Where(filters.Condition).
 		PlaceholderFormat(squirrel.Dollar)
 
-	rows, err := s.runQuery(context.Background(), query)
+	rows, err := s.RunQuery(context.Background(), query)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (s *Storage) CreateUser(params UserCreateParams) (*entities.User, error) {
 		Suffix("RETURNING *").
 		PlaceholderFormat(squirrel.Dollar)
 
-	rows, err := s.runQuery(context.Background(), query)
+	rows, err := s.RunQuery(context.Background(), query)
 	if err != nil {
 		return nil, err
 	}

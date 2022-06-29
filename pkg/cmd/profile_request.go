@@ -23,9 +23,11 @@ func ProfileRequestFunction(storage *db.Storage) func(w http.ResponseWriter, r *
 			return
 		}
 
+		action := actions.NewStorageAction(storage)
+
 		login := r.URL.Query().Get("login")
 
-		tokenValid, err := actions.CheckUserToken(storage, login, tokenCookie.Value)
+		tokenValid, err := action.CheckUserToken(login, tokenCookie.Value)
 		if err != nil {
 			SendResponse(w, http.StatusInternalServerError, nil, err, "Error during token check.")
 			return
@@ -35,7 +37,7 @@ func ProfileRequestFunction(storage *db.Storage) func(w http.ResponseWriter, r *
 			return
 		}
 
-		user, err := actions.GetUser(storage, login)
+		user, err := action.GetUser(login)
 		if err != nil {
 			SendResponse(w, http.StatusInternalServerError, nil, err, "Error during user query.")
 			return

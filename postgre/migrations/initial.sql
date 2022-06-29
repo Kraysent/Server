@@ -13,12 +13,12 @@ CREATE TABLE users (
     salt BIGINT NOT NULL,
     password_hash TEXT NOT NULL,
     description TEXT DEFAULT 'test',
-    city BIGINT REFERENCES cities(id),
+    city_id BIGINT REFERENCES cities(id),
     registration_date TIMESTAMP DEFAULT NOW()
 );
 CREATE TABLE tokens (
     id SERIAL,
-    login BIGINT REFERENCES users(id),
+    user_id BIGINT REFERENCES users(id),
     value TEXT NOT NULL,
     start_date TIMESTAMP DEFAULT NOW(),
     expiration_date TIMESTAMP NOT NULL

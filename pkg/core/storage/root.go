@@ -58,7 +58,7 @@ func NewStorage(config StorageConfig) *Storage {
 	}
 }
 
-func (s *Storage) runQuery(ctx context.Context, query squirrel.Sqlizer) (pgx.Rows, error) {
+func (s *Storage) RunQuery(ctx context.Context, query squirrel.Sqlizer) (pgx.Rows, error) {
 	sqlQuery, args, err := query.ToSql()
 	if err != nil {
 		return nil, err

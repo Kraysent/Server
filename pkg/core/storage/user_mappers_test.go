@@ -109,7 +109,7 @@ func (s *UsersMapperTestSuite) truncateAll() error {
 
 	for _, tableName := range tableNames {
 		query := squirrel.Expr(fmt.Sprintf("TRUNCATE TABLE %s RESTART IDENTITY CASCADE", tableName))
-		rows, err := s.storage.runQuery(s.ctx, query)
+		rows, err := s.storage.RunQuery(s.ctx, query)
 		if err != nil {
 			return err
 		}

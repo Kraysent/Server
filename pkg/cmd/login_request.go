@@ -47,7 +47,9 @@ func LoginRequestFunction(storage *db.Storage) func(w http.ResponseWriter, r *ht
 			return
 		}
 
-		foundUser, err := actions.GetUser(storage, creds.Login)
+		action := actions.NewStorageAction(storage)
+
+		foundUser, err := action.GetUser(creds.Login)
 		if err != nil {
 			SendResponse(w, http.StatusInternalServerError, LoginResponse{Message: err.Error()}, err, "")
 			return
@@ -60,16 +62,16 @@ func LoginRequestFunction(storage *db.Storage) func(w http.ResponseWriter, r *ht
 		if foundUser.PasswordHash != actions.HashPassword(creds.Password, foundUser.Salt) {
 			SendResponse(w, http.StatusUnauthorized, nil, nil, "")
 		} else {
-			token, err := actions.IssueToken(storage, creds.Login)
+			token, err := action.IssueToken(creds.Login)
 			if err != nil {
 				SendResponse(w, http.StatusInternalServerError, nil, err, "Error during token issue.")
 			}
-	
+
 			http.SetCookie(w, &http.Cookie{
 				Name:  "token",
 				Value: token,
 			})
-			
+
 			SendResponse(w, http.StatusOK, nil, nil, "")
 		}
 	}

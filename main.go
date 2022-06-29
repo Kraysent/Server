@@ -29,6 +29,11 @@ func main() {
 	zlog.Logger = zlog.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
 	storage := db.NewStorage(config.Storage)
+	err = storage.Connect()
+	if err != nil {
+		zlog.Fatal().Err(err).Msg("Error occured during connection to storage")
+	}
+	defer storage.Disconnect()
 
 	// Common handlers
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) { fmt.Fprintf(w, "pong") })

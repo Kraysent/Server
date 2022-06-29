@@ -38,13 +38,15 @@ func RegisterRequestFunction(storage *db.Storage) func(w http.ResponseWriter, r 
 			return
 		}
 
-		_, err = actions.CreateUser(storage, creds.Login, creds.Password, creds.Description)
+		action := actions.NewStorageAction(storage)
+
+		_, err = action.CreateUser(creds.Login, creds.Password, creds.Description)
 		if err != nil {
 			SendResponse(w, http.StatusInternalServerError, RegisterResponse{Message: err.Error()}, err, "")
 			return
 		}
 
-		token, err := actions.IssueToken(storage, creds.Login)
+		token, err := action.IssueToken(creds.Login)
 		if err != nil {
 			SendResponse(w, http.StatusInternalServerError, nil, err, "Error during token issue.")
 		}
