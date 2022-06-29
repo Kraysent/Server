@@ -61,34 +61,25 @@ func (s *UsersMapperTestSuite) TestCreate() {
 }
 
 func (s *UsersMapperTestSuite) TestFind() {
-	description := "description"
-	registration_time := time.Unix(1656363017, 0).UTC()
-	_, err := s.storage.CreateUser(UserCreateParams{
-		Login:            "test1",
-		Salt:             1,
-		PasswordHash:     "hash1",
-		Description:      &description,
-		RegistrationDate: &registration_time,
-	})
-	s.Require().NoError(err)
+	testUsersRows := []struct {
+		login            string
+		salt             int
+		hash             string
+		description      string
+		registrationDate time.Time
+	}{
+		{login: "test1", salt: 1, hash: "hash1", description: "desc1", registrationDate: time.Unix(1656362017, 0).UTC()},
+		{login: "test2", salt: 2, hash: "hash2", description: "desc2", registrationDate: time.Unix(1656363017, 0).UTC()},
+		{login: "test3", salt: 3, hash: "hash3", description: "desc3", registrationDate: time.Unix(1656364017, 0).UTC()},
+	}
 
-	_, err = s.storage.CreateUser(UserCreateParams{
-		Login:            "test2",
-		Salt:             2,
-		PasswordHash:     "hash2",
-		Description:      &description,
-		RegistrationDate: &registration_time,
-	})
-	s.Require().NoError(err)
-
-	_, err = s.storage.CreateUser(UserCreateParams{
-		Login:            "test3",
-		Salt:             3,
-		PasswordHash:     "hash2",
-		Description:      &description,
-		RegistrationDate: &registration_time,
-	})
-	s.Require().NoError(err)
+	for _, row := range testUsersRows {
+		_, err := s.storage.CreateUser(UserCreateParams{
+			Login: row.login, Salt: row.salt, PasswordHash: row.hash,
+			Description: &row.description, RegistrationDate: &row.registrationDate,
+		})
+		s.Require().NoError(err)
+	}
 
 	login := "test2"
 	actual, err := s.storage.FindUsers(UsersFindParams{
@@ -98,13 +89,8 @@ func (s *UsersMapperTestSuite) TestFind() {
 
 	expected := []entities.User{
 		{
-			ID:               2,
-			Login:            "test2",
-			Salt:             2,
-			PasswordHash:     "hash2",
-			Description:      description,
-			CityID:           0,
-			RegistrationDate: registration_time,
+			ID: 2, Login: "test2", Salt: 2, PasswordHash: "hash2",
+			Description: "desc2", CityID: 0, RegistrationDate: time.Unix(1656363017, 0).UTC(),
 		},
 	}
 	assert.Equal(s.T(), expected, actual)

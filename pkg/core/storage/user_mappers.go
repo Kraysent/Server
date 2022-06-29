@@ -50,26 +50,16 @@ func scanUser(rows pgx.Rows) (entities.User, error) {
 }
 
 func (s *Storage) FindUsers(params UsersFindParams) ([]entities.User, error) {
-	condition := squirrel.And{}
-	if params.ID != nil {
-		condition = append(condition, squirrel.Eq{"id": params.ID})
-	}
-	if params.Login != nil {
-		condition = append(condition, squirrel.Eq{"login": params.Login})
-	}
-	if params.Description != nil {
-		condition = append(condition, squirrel.Eq{"description": params.Description})
-	}
-	if params.CityID != nil {
-		condition = append(condition, squirrel.Eq{"city_id": params.CityID})
-	}
-	if params.RegistrationDate != nil {
-		condition = append(condition, squirrel.Eq{"registration_date": params.RegistrationDate})
-	}
+	filters := NewFilters()
+	filters.AddEqual("id", params.ID)
+	filters.AddEqual("login", params.Login)
+	filters.AddEqual("description", params.Description)
+	filters.AddEqual("city_id", params.CityID)
+	filters.AddEqual("registration_date", params.RegistrationDate)
 
 	query := squirrel.Select("*").
 		From(usersTableName).
-		Where(condition).
+		Where(filters.Condition).
 		PlaceholderFormat(squirrel.Dollar)
 
 	rows, err := s.runQuery(context.Background(), query)
