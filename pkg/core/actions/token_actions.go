@@ -25,7 +25,7 @@ func (a *StorageAction) IssueToken(login string) (string, error) {
 	return value.Value, nil
 }
 
-func (a *StorageAction) CheckUserToken(login string, token string) (bool, error) {
+func (a *StorageAction) CheckUserToken(login string, token string, currTime time.Time) (bool, error) {
 	user, err := a.Storage.GetUser(db.UsersFindParams{
 		Login: &login,
 	})
@@ -33,11 +33,12 @@ func (a *StorageAction) CheckUserToken(login string, token string) (bool, error)
 		return false, err
 	}
 
-	currTime := time.Now()
+	if user == nil {
+		return false, nil
+	}
+
 	tokens, err := a.Storage.FindTokens(db.TokenFindParams{
-		UserID: &user.ID,
-		Value:  &token,
-		Time:   &currTime,
+		UserID: &user.ID, Value: &token, Time: &currTime,
 	})
 	if err != nil {
 		return false, err

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"server/pkg/core/actions"
 	db "server/pkg/core/storage"
+	"time"
 
 	zlog "github.com/rs/zerolog/log"
 )
@@ -27,7 +28,7 @@ func ProfileRequestFunction(storage *db.Storage) func(w http.ResponseWriter, r *
 
 		login := r.URL.Query().Get("login")
 
-		tokenValid, err := action.CheckUserToken(login, tokenCookie.Value)
+		tokenValid, err := action.CheckUserToken(login, tokenCookie.Value, time.Now())
 		if err != nil {
 			SendResponse(w, http.StatusInternalServerError, nil, err, "Error during token check.")
 			return
