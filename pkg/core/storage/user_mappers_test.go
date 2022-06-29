@@ -1,39 +1,16 @@
 package storage
 
 import (
-	"context"
-	"fmt"
 	"server/pkg/core/entities"
 	"testing"
 	"time"
 
-	"github.com/Masterminds/squirrel"
-	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
 type UsersMapperTestSuite struct {
-	suite.Suite
-	storage *Storage
-	ctx     context.Context
-}
-
-func (s *UsersMapperTestSuite) SetupSuite() {
-	s.ctx = context.Background()
-	zerolog.SetGlobalLevel(zerolog.Disabled)
-
-	config := StorageConfig{
-		DSN: "host=localhost port=5432 user=testserver password=passw0rd dbname=testserverdb sslmode=disable",
-	}
-
-	s.storage = NewStorage(config)
-	err := s.storage.Connect()
-	s.Require().NoError(err)
-}
-
-func (s *UsersMapperTestSuite) SetupTest() {
-	s.Require().NoError(s.truncateAll())
+	BaseStorageSuite
 }
 
 func (s *UsersMapperTestSuite) TestCreate() {
@@ -96,28 +73,6 @@ func (s *UsersMapperTestSuite) TestFind() {
 	assert.Equal(s.T(), expected, actual)
 }
 
-func (s *UsersMapperTestSuite) TearDownSuite() {
-	s.storage.Disconnect()
-}
-
-func TestMapperTestSuite(t *testing.T) {
+func TestUserMapperTestSuite(t *testing.T) {
 	suite.Run(t, new(UsersMapperTestSuite))
-}
-
-func (s *UsersMapperTestSuite) truncateAll() error {
-	tableNames := []string{countriesTableName, cititesTableName, tokensTableName, usersTableName}
-
-	for _, tableName := range tableNames {
-		query := squirrel.Expr(fmt.Sprintf("TRUNCATE TABLE %s RESTART IDENTITY CASCADE", tableName))
-		rows, err := s.storage.RunQuery(s.ctx, query)
-		if err != nil {
-			return err
-		}
-		if err := rows.Err(); err != nil {
-			return err
-		}
-		rows.Close()
-	}
-
-	return nil
 }

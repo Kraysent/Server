@@ -46,7 +46,7 @@ func scanUser(rows pgx.Rows) (entities.User, error) {
 
 	result.CityID = int(cityID.Int32)
 
-	return result, err
+	return result, nil
 }
 
 func (s *Storage) FindUsers(params UsersFindParams) ([]entities.User, error) {

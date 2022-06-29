@@ -11,3 +11,11 @@ type User struct {
 	CityID           int       `json:"city"`
 	RegistrationDate time.Time `json:"registration_date"`
 }
+
+type Token struct {
+	ID             int       `json:"id"`
+	Value          string    `json:"value"`
+	UserID         int       `json:"user_id"`
+	StartDate      time.Time `json:"start_date"`
+	ExpirationDate time.Time `json:"expiration_date"`
+}

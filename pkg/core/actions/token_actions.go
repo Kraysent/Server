@@ -1,8 +1,8 @@
 package actions
 
 import (
-	"golang.org/x/exp/slices"
 	db "server/pkg/core/storage"
+	"time"
 )
 
 func (a *StorageAction) IssueToken(login string) (string, error) {
@@ -15,12 +15,14 @@ func (a *StorageAction) IssueToken(login string) (string, error) {
 		return "", err
 	}
 
-	value, err := a.Storage.CreateToken(user.ID, token, a.Storage.Config.Token)
+	value, err := a.Storage.CreateToken(db.TokenCreateParams{
+		UserID: user.ID, Value: token, StartDate: time.Now(), ExpirationDate: time.Now().Add(a.Storage.Config.Token),
+	})
 	if err != nil {
 		return "", err
 	}
 
-	return value, nil
+	return value.Value, nil
 }
 
 func (a *StorageAction) CheckUserToken(login string, token string) (bool, error) {
@@ -31,10 +33,15 @@ func (a *StorageAction) CheckUserToken(login string, token string) (bool, error)
 		return false, err
 	}
 
-	tokens, err := a.Storage.FindValidTokens(user.ID)
+	currTime := time.Now()
+	tokens, err := a.Storage.FindTokens(db.TokenFindParams{
+		UserID: &user.ID,
+		Value:  &token,
+		Time:   &currTime,
+	})
 	if err != nil {
 		return false, err
 	}
 
-	return slices.Contains(tokens, token), nil
+	return len(tokens) != 0, nil
 }
