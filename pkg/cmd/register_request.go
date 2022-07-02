@@ -18,13 +18,8 @@ type RegisterResponse struct {
 	Message string `json:"message"`
 }
 
-func RegisterRequestFunction(storage *db.Storage) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodOptions {
-			SendResponse(w, http.StatusOK, nil, nil, "CORS Request processing.")
-			return
-		}
-
+func RegisterRequestFunction(storage *db.Storage) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		bodyRaw, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			SendResponse(w, http.StatusInternalServerError, RegisterResponse{Message: err.Error()}, err, "")
@@ -56,5 +51,5 @@ func RegisterRequestFunction(storage *db.Storage) func(w http.ResponseWriter, r 
 			Value: token,
 		})
 		SendResponse(w, http.StatusOK, nil, nil, "")
-	}
+	})
 }

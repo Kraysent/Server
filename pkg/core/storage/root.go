@@ -64,7 +64,7 @@ func (s *Storage) RunQuery(ctx context.Context, query squirrel.Sqlizer) (pgx.Row
 		return nil, err
 	}
 
-	zlog.Debug().Str("query", sqlQuery).Interface("args", args).Msg("Run query")
+	zlog.Debug().Str("query", sqlQuery).Interface("args", args).Msg("SQL query")
 
 	rows, err := s.connection.Query(ctx, sqlQuery, args...)
 	if err != nil {

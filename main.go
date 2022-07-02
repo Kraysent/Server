@@ -7,6 +7,8 @@ import (
 	"os"
 	"server/pkg/cmd"
 	"server/pkg/core"
+	"server/pkg/core/server"
+	"server/pkg/core/server/middleware"
 	db "server/pkg/core/storage"
 	"time"
 
@@ -35,14 +37,18 @@ func main() {
 	}
 	defer storage.Disconnect()
 
+	router := server.NewRouter()
+	router.AddMiddleware(middleware.CORSMiddleware)
+	router.AddMiddleware(middleware.LoggingMiddleware)
+
 	// Common handlers
-	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) { fmt.Fprintf(w, "pong") })
-	http.HandleFunc("/login", cmd.LoginRequestFunction(storage))
-	http.HandleFunc("/register", cmd.RegisterRequestFunction(storage))
-	http.HandleFunc("/profile", cmd.ProfileRequestFunction(storage))
+	router.Handle("/ping", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { fmt.Fprintf(w, "pong") }))
+	router.Handle("/login", cmd.LoginRequestFunction(storage))
+	router.Handle("/register", cmd.RegisterRequestFunction(storage))
+	router.Handle("/profile", cmd.ProfileRequestFunction(storage))
 
 	// Admin handlers
-	http.HandleFunc("/get_user", cmd.GetUserByLoginRequestFunction(storage))
+	router.Handle("/get_user", cmd.GetUserByLoginRequestFunction(storage))
 
 	zlog.Info().Str("address", fmt.Sprintf("http://127.0.0.1:%d", config.Server.Port)).Msg("Server is listening")
 	err = http.ListenAndServe(fmt.Sprintf(":%d", config.Server.Port), nil)

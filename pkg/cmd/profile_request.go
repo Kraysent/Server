@@ -5,19 +5,10 @@ import (
 	"server/pkg/core/actions"
 	db "server/pkg/core/storage"
 	"time"
-
-	zlog "github.com/rs/zerolog/log"
 )
 
-func ProfileRequestFunction(storage *db.Storage) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		zlog.Debug().Str("method", r.Method).Send()
-
-		if r.Method == http.MethodOptions {
-			SendResponse(w, http.StatusOK, nil, nil, "CORS Request processing.")
-			return
-		}
-
+func ProfileRequestFunction(storage *db.Storage) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tokenCookie, err := r.Cookie("token")
 		if err != nil {
 			SendResponse(w, http.StatusUnauthorized, nil, err, "")
@@ -45,5 +36,5 @@ func ProfileRequestFunction(storage *db.Storage) func(w http.ResponseWriter, r *
 		}
 
 		SendResponse(w, http.StatusOK, user, nil, "")
-	}
+	})
 }

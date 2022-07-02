@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"server/pkg/core/actions"
 	db "server/pkg/core/storage"
-
-	zlog "github.com/rs/zerolog/log"
 )
 
 const (
@@ -25,21 +23,13 @@ type LoginResponse struct {
 	Message string `json:"message"`
 }
 
-func LoginRequestFunction(storage *db.Storage) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
+func LoginRequestFunction(storage *db.Storage) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		bodyRaw, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			SendResponse(w, http.StatusInternalServerError, LoginResponse{Message: err.Error()}, err, "")
 			return
 		}
-
-		zlog.Debug().Bytes("request_body", bodyRaw).Str("method", r.Method).Send()
-
-		if r.Method == http.MethodOptions {
-			SendResponse(w, http.StatusOK, nil, nil, "CORS Request processing.")
-			return
-		}
-
 		creds := LoginCreds{}
 		err = json.Unmarshal(bodyRaw, &creds)
 		if err != nil {
@@ -74,6 +64,5 @@ func LoginRequestFunction(storage *db.Storage) func(w http.ResponseWriter, r *ht
 
 			SendResponse(w, http.StatusOK, nil, nil, "")
 		}
-	}
-
+	})
 }

@@ -8,8 +8,8 @@ import (
 	zlog "github.com/rs/zerolog/log"
 )
 
-func GetUserByLoginRequestFunction(storage *db.Storage) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
+func GetUserByLoginRequestFunction(storage *db.Storage) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		login := r.URL.Query().Get("login")
 
 		action := actions.NewStorageAction(storage)
@@ -19,5 +19,5 @@ func GetUserByLoginRequestFunction(storage *db.Storage) func(w http.ResponseWrit
 		}
 
 		SendResponse(w, http.StatusOK, user, nil, "")
-	}
+	})
 }
