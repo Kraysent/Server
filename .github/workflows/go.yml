@@ -40,7 +40,7 @@ jobs:
           pip install yandex-pgmigrate
       - name: Run migrations
         run: |
-          make run-migrations
+          cd postgre; pgmigrate -v -t 1 migrate -c 'dbname=testserverdb'
       - name: Check out into repository
         uses: actions/checkout@v2
       - name: Test
