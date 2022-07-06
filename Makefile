@@ -8,3 +8,6 @@ test:
 
 run:
 	go run .
+
+run-migrations: 
+	cd postgre; pgmigrate -v -t 1 migrate -c 'dbname=testserverdb'

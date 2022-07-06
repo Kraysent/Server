@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"os"
 	"server/pkg/core/entities"
 	"time"
 
@@ -24,6 +25,9 @@ func (s *BaseStorageSuite) SetupSuite() {
 
 	config := StorageConfig{
 		DSN: "host=localhost port=5432 user=testserver password=passw0rd dbname=testserverdb sslmode=disable",
+	}
+	if env := os.Getenv("DSN"); env != "" {
+		config.DSN = env
 	}
 
 	s.storage = NewStorage(config)
