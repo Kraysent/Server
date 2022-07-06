@@ -10,4 +10,4 @@ run:
 	go run .
 
 run-migrations: 
-	cd postgre; pgmigrate -v -t 1 migrate -c 'host=localhost dbname=testserverdb user=testserver port=5432 password=passw0rd'
+	migrate -path postgre/migrations -database "$(DB_URL)" -verbose up
