@@ -7,13 +7,14 @@ on:
 
 jobs:
   test:
+    name: Test
+    runs-on: ubuntu-latest
     services:
       postgres:
         image: postgres
         env:
           POSTGRES_USER: testserver
           POSTGRES_PASSWORD: passw0rd
-          POSTGRES_DB: testserverdb
         ports:
           - 5432:5432
         options: >-
@@ -22,8 +23,6 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-    name: Test
-    runs-on: ubuntu-latest
     steps:
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
@@ -40,10 +39,14 @@ jobs:
           pip install yandex-pgmigrate
       - name: Check out into repository
         uses: actions/checkout@v2
+      - name: Start PostgreSQL
+        run: sudo service postgresql start
       - name: Run migrations
         run: |
+          createdb testserverdb
           make run-migrations
       - name: Test
         env:
           DSN: "host=localhost port=5432 user=testserver password=passw0rd dbname=testserverdb sslmode=disable"
-        run: make test
+        run: |
+          make test
