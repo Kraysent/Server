@@ -61,6 +61,10 @@ func LoginRequestFunction(storage *db.Storage) http.Handler {
 				Name:  "token",
 				Value: token,
 			})
+			http.SetCookie(w, &http.Cookie{
+				Name:  "login",
+				Value: creds.Login,
+			})
 
 			SendResponse(w, http.StatusOK, nil, nil, "")
 		}

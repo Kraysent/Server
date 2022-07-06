@@ -25,3 +25,9 @@ func (a *StorageAction) CreateUser(login string, password string, description st
 
 	return user, nil
 }
+
+func (a *StorageAction) FindUserByPattern(loginLike string) ([]entities.User, error) {
+	return a.Storage.FindUsers(db.UsersFindParams{
+		LoginLike: &loginLike,
+	})
+}

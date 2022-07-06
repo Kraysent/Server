@@ -28,6 +28,14 @@ func (f *Filters) AddEqual(field string, value any) {
 	f.Condition = append(f.Condition, squirrel.Eq{field: value})
 }
 
+func (f *Filters) AddLike(field string, value any) {
+	if f.isNil(value) {
+		return
+	}
+
+	f.Condition = append(f.Condition, squirrel.Like{field: value})
+}
+
 func (f *Filters) AddGreaterThan(field string, value any) {
 	if f.isNil(value) {
 		return

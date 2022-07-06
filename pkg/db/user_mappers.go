@@ -15,6 +15,7 @@ import (
 type UsersFindParams struct {
 	ID               *int
 	Login            *string
+	LoginLike        *string
 	Description      *string
 	CityID           *int
 	RegistrationDate *time.Time
@@ -70,6 +71,7 @@ func (s *Storage) FindUsers(params UsersFindParams) ([]entities.User, error) {
 	filters := storage.NewFilters()
 	filters.AddEqual(entities.UserFieldID, params.ID)
 	filters.AddEqual(entities.UserFieldLogin, params.Login)
+	filters.AddLike(entities.UserFieldLogin, params.LoginLike)
 	filters.AddEqual(entities.UserFieldDescription, params.Description)
 	filters.AddEqual(entities.UserFieldCityID, params.CityID)
 	filters.AddEqual(entities.UserFieldRegistrationDate, params.RegistrationDate)

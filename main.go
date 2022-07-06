@@ -45,7 +45,8 @@ func main() {
 	router.Handle("/ping", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { fmt.Fprintf(w, "pong") }))
 	router.Handle("/login", cmd.LoginRequestFunction(storage))
 	router.Handle("/register", cmd.RegisterRequestFunction(storage))
-	router.Handle("/profile", cmd.ProfileRequestFunction(storage))
+	router.Handle("/profile", cmd.ProfileRequestFunction(storage), middleware.GetAuthMiddleware(storage))
+	router.Handle("/search", cmd.SearchRequestFunction(storage), middleware.GetAuthMiddleware(storage))
 
 	// Admin handlers
 	router.Handle("/get_user", cmd.GetUserByLoginRequestFunction(storage))
