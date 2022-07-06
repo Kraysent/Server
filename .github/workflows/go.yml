@@ -11,10 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres
+        image: postgres:14-alpine
         env:
           POSTGRES_USER: testserver
           POSTGRES_PASSWORD: passw0rd
+          POSTGRES_DB: testserverdb
         ports:
           - 5432:5432
         options: >-
