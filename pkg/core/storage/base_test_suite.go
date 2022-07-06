@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"server/pkg/core/entities"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/rs/zerolog"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -26,15 +28,30 @@ func (s *BaseStorageSuite) SetupSuite() {
 
 	s.storage = NewStorage(config)
 	err := s.storage.Connect()
-	s.Require().NoError(err)
+	require.NoError(s.T(), err)
 }
 
 func (s *BaseStorageSuite) SetupTest() {
-	s.Require().NoError(s.truncateAll())
+	require.NoError(s.T(), s.truncateAll())
 }
 
 func (s *BaseStorageSuite) TearDownSuite() {
 	s.storage.Disconnect()
+}
+
+func (s *BaseStorageSuite) createTestUser(login string, salt int, hash, description string, registrationDate time.Time) {
+	_, err := s.storage.CreateUser(UserCreateParams{
+		Login: login, Salt: salt, PasswordHash: hash,
+		Description: &description, RegistrationDate: &registrationDate,
+	})
+	require.NoError(s.T(), err)
+}
+
+func (s *BaseStorageSuite) createTestToken(userID int, value string, startDate, endDate time.Time) {
+	_, err := s.storage.CreateToken(TokenCreateParams{
+		UserID: userID, Value: value, StartDate: startDate, ExpirationDate: endDate,
+	})
+	require.NoError(s.T(), err)
 }
 
 func (s *BaseStorageSuite) truncateAll() error {

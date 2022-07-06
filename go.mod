@@ -7,7 +7,7 @@ require (
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/rs/zerolog v1.15.0
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/exp v0.0.0-20220613132600-b0d781184e0d
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 )
 

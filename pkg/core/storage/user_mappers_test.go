@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -17,52 +18,28 @@ func (s *UsersMapperTestSuite) TestCreate() {
 	description := "description"
 	registration_time := time.Unix(1656363017, 0).UTC()
 	actual, err := s.storage.CreateUser(UserCreateParams{
-		Login:            "test",
-		Salt:             1,
-		PasswordHash:     "hash",
-		Description:      &description,
-		RegistrationDate: &registration_time,
+		Login: "test", Salt: 1, PasswordHash: "hash",
+		Description: &description, RegistrationDate: &registration_time,
 	})
-	s.Require().NoError(err)
+	require.NoError(s.T(), err)
 
 	expected := entities.User{
-		ID:               1,
-		Login:            "test",
-		Salt:             1,
-		PasswordHash:     "hash",
-		Description:      description,
-		CityID:           0,
-		RegistrationDate: registration_time,
+		ID: 1, Login: "test", Salt: 1, PasswordHash: "hash",
+		Description: description, CityID: 0, RegistrationDate: registration_time,
 	}
 	assert.Equal(s.T(), &expected, actual)
 }
 
 func (s *UsersMapperTestSuite) TestFind() {
-	testUsersRows := []struct {
-		login            string
-		salt             int
-		hash             string
-		description      string
-		registrationDate time.Time
-	}{
-		{login: "test1", salt: 1, hash: "hash1", description: "desc1", registrationDate: time.Unix(1656362017, 0).UTC()},
-		{login: "test2", salt: 2, hash: "hash2", description: "desc2", registrationDate: time.Unix(1656363017, 0).UTC()},
-		{login: "test3", salt: 3, hash: "hash3", description: "desc3", registrationDate: time.Unix(1656364017, 0).UTC()},
-	}
-
-	for _, row := range testUsersRows {
-		_, err := s.storage.CreateUser(UserCreateParams{
-			Login: row.login, Salt: row.salt, PasswordHash: row.hash,
-			Description: &row.description, RegistrationDate: &row.registrationDate,
-		})
-		s.Require().NoError(err)
-	}
+	s.createTestUser("test1", 1, "hash1", "desc1", time.Unix(1656362017, 0).UTC())
+	s.createTestUser("test2", 2, "hash2", "desc2", time.Unix(1656363017, 0).UTC())
+	s.createTestUser("test3", 3, "hash3", "desc3", time.Unix(1656364017, 0).UTC())
 
 	login := "test2"
 	actual, err := s.storage.FindUsers(UsersFindParams{
 		Login: &login,
 	})
-	s.Require().NoError(err)
+	require.NoError(s.T(), err)
 
 	expected := []entities.User{
 		{

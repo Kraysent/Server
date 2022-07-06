@@ -8,6 +8,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4"
+	"golang.org/x/xerrors"
 )
 
 type UsersFindParams struct {
@@ -27,41 +28,7 @@ type UserCreateParams struct {
 	RegistrationDate *time.Time
 }
 
-func scanUser(rows pgx.Rows) (entities.User, error) {
-	var result entities.User
-	var cityID sql.NullInt32
-
-	err := rows.Scan(
-		&result.ID,
-		&result.Login,
-		&result.Salt,
-		&result.PasswordHash,
-		&result.Description,
-		&cityID,
-		&result.RegistrationDate,
-	)
-	if err != nil {
-		return entities.User{}, err
-	}
-
-	result.CityID = int(cityID.Int32)
-
-	return result, nil
-}
-
-func (s *Storage) FindUsers(params UsersFindParams) ([]entities.User, error) {
-	filters := NewFilters()
-	filters.AddEqual("id", params.ID)
-	filters.AddEqual("login", params.Login)
-	filters.AddEqual("description", params.Description)
-	filters.AddEqual("city_id", params.CityID)
-	filters.AddEqual("registration_date", params.RegistrationDate)
-
-	query := squirrel.Select("*").
-		From(entities.TableUsers).
-		Where(filters.Condition).
-		PlaceholderFormat(squirrel.Dollar)
-
+func (s *Storage) executeUserQuery(query squirrel.Sqlizer) ([]entities.User, error) {
 	rows, err := s.RunQuery(context.Background(), query)
 	if err != nil {
 		return nil, err
@@ -79,6 +46,39 @@ func (s *Storage) FindUsers(params UsersFindParams) ([]entities.User, error) {
 	}
 
 	return users, nil
+}
+
+func scanUser(rows pgx.Rows) (entities.User, error) {
+	var result entities.User
+	var cityID sql.NullInt32
+
+	err := rows.Scan(
+		&result.ID, &result.Login, &result.Salt, &result.PasswordHash,
+		&result.Description, &cityID, &result.RegistrationDate,
+	)
+	if err != nil {
+		return entities.User{}, err
+	}
+
+	result.CityID = int(cityID.Int32)
+
+	return result, nil
+}
+
+func (s *Storage) FindUsers(params UsersFindParams) ([]entities.User, error) {
+	filters := NewFilters()
+	filters.AddEqual(entities.UserFieldID, params.ID)
+	filters.AddEqual(entities.UserFieldLogin, params.Login)
+	filters.AddEqual(entities.UserFieldDescription, params.Description)
+	filters.AddEqual(entities.UserFieldCityID, params.CityID)
+	filters.AddEqual(entities.UserFieldRegistrationDate, params.RegistrationDate)
+
+	query := squirrel.Select("*").
+		From(entities.TableUsers).
+		Where(filters.Condition).
+		PlaceholderFormat(squirrel.Dollar)
+
+	return s.executeUserQuery(query)
 }
 
 func (s *Storage) GetUser(params UsersFindParams) (*entities.User, error) {
@@ -102,15 +102,15 @@ func (s *Storage) CreateUser(params UserCreateParams) (*entities.User, error) {
 	values := []any{params.Login, params.Salt, params.PasswordHash}
 
 	if params.Description != nil {
-		columns = append(columns, "description")
+		columns = append(columns, entities.UserFieldDescription)
 		values = append(values, &params.Description)
 	}
 	if params.CityID != nil {
-		columns = append(columns, "city")
+		columns = append(columns, entities.UserFieldCityID)
 		values = append(values, &params.CityID)
 	}
 	if params.RegistrationDate != nil {
-		columns = append(columns, "registration_date")
+		columns = append(columns, entities.UserFieldRegistrationDate)
 		values = append(values, &params.RegistrationDate)
 	}
 
@@ -120,19 +120,13 @@ func (s *Storage) CreateUser(params UserCreateParams) (*entities.User, error) {
 		Suffix("RETURNING *").
 		PlaceholderFormat(squirrel.Dollar)
 
-	rows, err := s.RunQuery(context.Background(), query)
+	result, err := s.executeUserQuery(query)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
-	var result entities.User
-	for rows.Next() {
-		result, err = scanUser(rows)
-		if err != nil {
-			return nil, err
-		}
+	if len(result) == 0 {
+		return nil, xerrors.New("INSERT command returned no rows.")
 	}
 
-	return &result, nil
+	return &result[0], nil
 }

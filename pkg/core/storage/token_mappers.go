@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/jackc/pgx/v4"
+	"golang.org/x/xerrors"
 )
 
 type TokenCreateParams struct {
@@ -23,18 +23,23 @@ type TokenFindParams struct {
 	Time *time.Time
 }
 
-func scanToken(rows pgx.Rows) (entities.Token, error) {
-	var result entities.Token
-
-	err := rows.Scan(
-		&result.ID,
-		&result.UserID,
-		&result.Value,
-		&result.StartDate,
-		&result.ExpirationDate,
-	)
+func (s *Storage) executeTokenQuery(query squirrel.Sqlizer) ([]entities.Token, error) {
+	rows, err := s.RunQuery(context.Background(), query)
 	if err != nil {
-		return entities.Token{}, err
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make([]entities.Token, 0)
+	for rows.Next() {
+		var curr entities.Token
+		if err := rows.Scan(
+			&curr.ID, &curr.UserID, &curr.Value, &curr.StartDate, &curr.ExpirationDate,
+		); err != nil {
+			return nil, err
+		}
+
+		result = append(result, curr)
 	}
 
 	return result, nil
@@ -50,21 +55,15 @@ func (s *Storage) CreateToken(params TokenCreateParams) (*entities.Token, error)
 		PlaceholderFormat(squirrel.Dollar).
 		Suffix("RETURNING *")
 
-	rows, err := s.RunQuery(context.Background(), query)
+	result, err := s.executeTokenQuery(query)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
-	var result entities.Token
-	for rows.Next() {
-		result, err = scanToken(rows)
-		if err != nil {
-			return nil, err
-		}
+	if len(result) == 0 {
+		return nil, xerrors.New("INSERT command returned no rows.")
 	}
 
-	return &result, nil
+	return &result[0], nil
 }
 
 func (s *Storage) FindTokens(params TokenFindParams) ([]entities.Token, error) {
@@ -78,21 +77,5 @@ func (s *Storage) FindTokens(params TokenFindParams) ([]entities.Token, error) {
 		Where(filters.Condition).
 		PlaceholderFormat(squirrel.Dollar)
 
-	rows, err := s.RunQuery(context.Background(), query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	result := make([]entities.Token, 0)
-	for rows.Next() {
-		curr, err := scanToken(rows)
-		if err != nil {
-			return nil, err
-		}
-
-		result = append(result, curr)
-	}
-
-	return result, nil
+	return s.executeTokenQuery(query)
 }
