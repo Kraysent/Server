@@ -1,4 +1,4 @@
-package storage
+package db
 
 import (
 	"server/pkg/core/entities"

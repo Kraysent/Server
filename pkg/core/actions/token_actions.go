@@ -1,16 +1,14 @@
 package actions
 
 import (
-	db "server/pkg/core/storage"
+	"server/pkg/db"
 	"time"
 )
 
 func (a *StorageAction) IssueToken(login string) (string, error) {
 	token := GenerateToken(nil)
 
-	user, err := a.Storage.GetUser(db.UsersFindParams{
-		Login: &login,
-	})
+	user, err := a.Storage.GetUser(login)
 	if err != nil {
 		return "", err
 	}
@@ -26,9 +24,7 @@ func (a *StorageAction) IssueToken(login string) (string, error) {
 }
 
 func (a *StorageAction) CheckUserToken(login string, token string, currTime time.Time) (bool, error) {
-	user, err := a.Storage.GetUser(db.UsersFindParams{
-		Login: &login,
-	})
+	user, err := a.Storage.GetUser(login)
 	if err != nil {
 		return false, err
 	}

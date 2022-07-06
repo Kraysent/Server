@@ -1,9 +1,10 @@
-package storage
+package db
 
 import (
 	"context"
 	"database/sql"
 	"server/pkg/core/entities"
+	"server/pkg/core/storage"
 	"time"
 
 	"github.com/Masterminds/squirrel"
@@ -66,7 +67,7 @@ func scanUser(rows pgx.Rows) (entities.User, error) {
 }
 
 func (s *Storage) FindUsers(params UsersFindParams) ([]entities.User, error) {
-	filters := NewFilters()
+	filters := storage.NewFilters()
 	filters.AddEqual(entities.UserFieldID, params.ID)
 	filters.AddEqual(entities.UserFieldLogin, params.Login)
 	filters.AddEqual(entities.UserFieldDescription, params.Description)
@@ -81,8 +82,10 @@ func (s *Storage) FindUsers(params UsersFindParams) ([]entities.User, error) {
 	return s.executeUserQuery(query)
 }
 
-func (s *Storage) GetUser(params UsersFindParams) (*entities.User, error) {
-	users, err := s.FindUsers(params)
+func (s *Storage) GetUser(login string) (*entities.User, error) {
+	users, err := s.FindUsers(UsersFindParams{
+		Login: &login,
+	})
 
 	if err != nil {
 		return nil, err

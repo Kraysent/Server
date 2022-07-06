@@ -2,13 +2,11 @@ package actions
 
 import (
 	"server/pkg/core/entities"
-	db "server/pkg/core/storage"
+	"server/pkg/db"
 )
 
 func (a *StorageAction) GetUser(login string) (*entities.User, error) {
-	return a.Storage.GetUser(db.UsersFindParams{
-		Login: &login,
-	})
+	return a.Storage.GetUser(login)
 }
 
 func (a *StorageAction) CreateUser(login string, password string, description string) (*entities.User, error) {

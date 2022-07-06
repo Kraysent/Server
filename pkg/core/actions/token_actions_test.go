@@ -1,11 +1,12 @@
 package actions
 
 import (
-	db "server/pkg/core/storage"
+	"server/pkg/db"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -40,7 +41,7 @@ func (s *TokenActionsTestSuite) SetupTest() {
 			Login: row.login, Salt: row.salt, PasswordHash: row.hash,
 			Description: &row.description, RegistrationDate: &row.registrationDate,
 		})
-		s.Require().NoError(err)
+		require.NoError(s.T(), err)
 	}
 }
 
@@ -55,11 +56,11 @@ func (s *TokenActionsTestSuite) TestCheckTokenCaseExists() {
 		_, err := s.action.Storage.CreateToken(db.TokenCreateParams{
 			UserID: row.userID, Value: row.value, StartDate: row.startDate, ExpirationDate: row.endDate,
 		})
-		s.Require().NoError(err)
+		require.NoError(s.T(), err)
 	}
 
 	actual, err := s.action.CheckUserToken("test1", "aaa", time.Unix(1656362017, 0).UTC())
-	s.Require().NoError(err)
+	require.NoError(s.T(), err)
 
 	assert.True(s.T(), actual)
 }
@@ -75,11 +76,11 @@ func (s *TokenActionsTestSuite) TestCheckTokenCaseDoesNotExist() {
 		_, err := s.action.Storage.CreateToken(db.TokenCreateParams{
 			UserID: row.userID, Value: row.value, StartDate: row.startDate, ExpirationDate: row.endDate,
 		})
-		s.Require().NoError(err)
+		require.NoError(s.T(), err)
 	}
 
 	actual, err := s.action.CheckUserToken("test1", "aba", time.Unix(1656362017, 0).UTC())
-	s.Require().NoError(err)
+	require.NoError(s.T(), err)
 
 	assert.False(s.T(), actual)
 }

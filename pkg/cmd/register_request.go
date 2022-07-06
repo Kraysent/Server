@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"server/pkg/core/actions"
-	db "server/pkg/core/storage"
+	"server/pkg/db"
 )
 
 type RegisterCreds struct {

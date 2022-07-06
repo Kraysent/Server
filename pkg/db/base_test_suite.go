@@ -1,4 +1,4 @@
-package storage
+package db
 
 import (
 	"context"
@@ -36,7 +36,7 @@ func (s *BaseStorageSuite) SetupTest() {
 }
 
 func (s *BaseStorageSuite) TearDownSuite() {
-	s.storage.Disconnect()
+	require.NoError(s.T(), s.storage.Disconnect())
 }
 
 func (s *BaseStorageSuite) createTestUser(login string, salt int, hash, description string, registrationDate time.Time) {

@@ -9,7 +9,7 @@ import (
 	"server/pkg/core"
 	"server/pkg/core/server"
 	"server/pkg/core/server/middleware"
-	db "server/pkg/core/storage"
+	"server/pkg/db"
 	"time"
 
 	"github.com/rs/zerolog"

@@ -1,6 +1,6 @@
 package actions
 
-import db "server/pkg/core/storage"
+import "server/pkg/db"
 
 type StorageAction struct {
 	Storage *db.Storage

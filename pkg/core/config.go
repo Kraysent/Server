@@ -2,7 +2,7 @@ package core
 
 import (
 	"io/ioutil"
-	db "server/pkg/core/storage"
+	"server/pkg/db"
 
 	"gopkg.in/yaml.v3"
 )

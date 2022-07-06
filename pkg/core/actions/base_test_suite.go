@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	db "server/pkg/core/storage"
+	"server/pkg/db"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/rs/zerolog"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -33,16 +34,16 @@ func (s *BaseActionsTestSuite) SetupSuite() {
 	})
 	s.action = NewStorageAction(storage)
 	err := s.action.Storage.Connect()
-	s.Require().NoError(err)
+	require.NoError(s.T(), err)
 }
 
 
 func (s *BaseActionsTestSuite) SetupTest() {
-	s.Require().NoError(s.truncateAll())
+	require.NoError(s.T(), s.truncateAll())
 }
 
 func (s *BaseActionsTestSuite) TearDownSuite() {
-	s.action.Storage.Disconnect()
+	require.NoError(s.T(), s.action.Storage.Disconnect())
 }
 
 func (s *BaseActionsTestSuite) truncateAll() error {

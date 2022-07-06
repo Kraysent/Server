@@ -1,8 +1,9 @@
-package storage
+package db
 
 import (
 	"context"
 	"server/pkg/core/entities"
+	"server/pkg/core/storage"
 	"time"
 
 	"github.com/Masterminds/squirrel"
@@ -67,7 +68,7 @@ func (s *Storage) CreateToken(params TokenCreateParams) (*entities.Token, error)
 }
 
 func (s *Storage) FindTokens(params TokenFindParams) ([]entities.Token, error) {
-	filters := NewFilters()
+	filters := storage.NewFilters()
 	filters.AddEqual(entities.TokenFieldUserID, params.UserID)
 	filters.AddEqual(entities.TokenFieldValue, params.Value)
 	filters.AddInRange(entities.TokenFieldStartDate, entities.TokenFieldExpirationDate, params.Time)
