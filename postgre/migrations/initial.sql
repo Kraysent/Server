@@ -19,7 +19,7 @@ CREATE TABLE users (
 CREATE TABLE tokens (
     id SERIAL,
     user_id BIGINT REFERENCES users(id),
-    value TEXT NOT NULL,
+    value TEXT NOT NULL UNIQUE,
     start_date TIMESTAMP DEFAULT NOW(),
     expiration_date TIMESTAMP NOT NULL
 );

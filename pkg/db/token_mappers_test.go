@@ -22,7 +22,7 @@ func (s *TokenMapperTestSuite) SetupTest() {
 	s.createTestUser("test3", 3, "hash3", "desc3", time.Unix(1656364017, 0).UTC())
 }
 
-func (s *TokenMapperTestSuite) TestCreate() {
+func (s *TokenMapperTestSuite) TestCreateNew() {
 	actual, err := s.storage.CreateToken(TokenCreateParams{
 		UserID: 1, Value: "aaaaaaaaa", StartDate: time.Unix(1656363017, 0).UTC(),
 		ExpirationDate: time.Unix(1656364017, 0).UTC(),
@@ -36,10 +36,42 @@ func (s *TokenMapperTestSuite) TestCreate() {
 	assert.Equal(s.T(), &expected, actual)
 }
 
-func (s *TokenMapperTestSuite) TestFind() {
-	s.createTestToken(1, "aaa", time.Unix(1656361017, 0).UTC(), time.Unix(1656365017, 0).UTC())
-	s.createTestToken(2, "bbb", time.Unix(1656366017, 0).UTC(), time.Unix(1656368017, 0).UTC())
-	s.createTestToken(1, "ccc", time.Unix(1656361017, 0).UTC(), time.Unix(1656369017, 0).UTC())
+func (s *TokenMapperTestSuite) TestCreateCollision() {
+	s.generateTestTokens()
+
+	_, err := s.storage.CreateToken(TokenCreateParams{
+		UserID: 1, Value: "bbb", StartDate: time.Unix(1656363017, 0).UTC(),
+		ExpirationDate: time.Unix(1656364017, 0).UTC(),
+	})
+	assert.Error(s.T(), err)
+}
+
+func (s *TokenMapperTestSuite) TestFundNoConditions() {
+	s.generateTestTokens()
+
+	actual, err := s.storage.FindTokens(TokenFindParams{})
+	require.NoError(s.T(), err)
+
+	expected := []entities.Token{
+		{
+			ID: 1, UserID: 1, Value: "aaa", StartDate: time.Unix(1656361017, 0).UTC(),
+			ExpirationDate: time.Unix(1656365017, 0).UTC(),
+		},
+		{
+			ID: 2, UserID: 2, Value: "bbb", StartDate: time.Unix(1656366017, 0).UTC(),
+			ExpirationDate: time.Unix(1656368017, 0).UTC(),
+		},
+		{
+			ID: 3, UserID: 1, Value: "ccc", StartDate: time.Unix(1656361017, 0).UTC(),
+			ExpirationDate: time.Unix(1656369017, 0).UTC(),
+		},
+	}
+
+	assert.Equal(s.T(), expected, actual)
+}
+
+func (s *TokenMapperTestSuite) TestFindWithFieldConditions() {
+	s.generateTestTokens()
 
 	userId := 1
 	t := time.Unix(1656363017, 0).UTC()
@@ -59,6 +91,12 @@ func (s *TokenMapperTestSuite) TestFind() {
 		},
 	}
 	assert.Equal(s.T(), expected, actual)
+}
+
+func (s *TokenMapperTestSuite) generateTestTokens() {
+	s.createTestToken(1, "aaa", time.Unix(1656361017, 0).UTC(), time.Unix(1656365017, 0).UTC())
+	s.createTestToken(2, "bbb", time.Unix(1656366017, 0).UTC(), time.Unix(1656368017, 0).UTC())
+	s.createTestToken(1, "ccc", time.Unix(1656361017, 0).UTC(), time.Unix(1656369017, 0).UTC())
 }
 
 func TestTokenMapperTestSuite(t *testing.T) {
