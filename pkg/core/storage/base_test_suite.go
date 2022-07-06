@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"server/pkg/core/entities"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/rs/zerolog"
@@ -37,7 +38,9 @@ func (s *BaseStorageSuite) TearDownSuite() {
 }
 
 func (s *BaseStorageSuite) truncateAll() error {
-	tableNames := []string{countriesTableName, cititesTableName, tokensTableName, usersTableName}
+	tableNames := []string{
+		countriesTableName, citiesTableName, entities.TableTokens, entities.TableUsers,
+	}
 
 	for _, tableName := range tableNames {
 		query := squirrel.Expr(fmt.Sprintf("TRUNCATE TABLE %s RESTART IDENTITY CASCADE", tableName))

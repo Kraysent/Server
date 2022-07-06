@@ -41,10 +41,10 @@ func scanToken(rows pgx.Rows) (entities.Token, error) {
 }
 
 func (s *Storage) CreateToken(params TokenCreateParams) (*entities.Token, error) {
-	columns := []string{"user_id", "value", "start_date", "expiration_date"}
+	columns := []string{entities.TokenFieldUserID, entities.TokenFieldValue, entities.TokenFieldStartDate, entities.TokenFieldExpirationDate}
 	values := []any{params.UserID, params.Value, params.StartDate, params.ExpirationDate}
 
-	query := squirrel.Insert(tokensTableName).
+	query := squirrel.Insert(entities.TableTokens).
 		Columns(columns...).
 		Values(values...).
 		PlaceholderFormat(squirrel.Dollar).
@@ -69,12 +69,12 @@ func (s *Storage) CreateToken(params TokenCreateParams) (*entities.Token, error)
 
 func (s *Storage) FindTokens(params TokenFindParams) ([]entities.Token, error) {
 	filters := NewFilters()
-	filters.AddEqual("user_id", params.UserID)
-	filters.AddEqual("value", params.Value)
-	filters.AddInRange("start_date", "expiration_date", params.Time)
+	filters.AddEqual(entities.TokenFieldUserID, params.UserID)
+	filters.AddEqual(entities.TokenFieldValue, params.Value)
+	filters.AddInRange(entities.TokenFieldStartDate, entities.TokenFieldExpirationDate, params.Time)
 
 	query := squirrel.Select("*").
-		From(tokensTableName).
+		From(entities.TableTokens).
 		Where(filters.Condition).
 		PlaceholderFormat(squirrel.Dollar)
 

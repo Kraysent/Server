@@ -12,9 +12,7 @@ import (
 
 const (
 	countriesTableName = "countries"
-	cititesTableName   = "cities"
-	tokensTableName    = "tokens"
-	usersTableName     = "users"
+	citiesTableName    = "cities"
 )
 
 type Storage struct {

@@ -58,7 +58,7 @@ func (s *Storage) FindUsers(params UsersFindParams) ([]entities.User, error) {
 	filters.AddEqual("registration_date", params.RegistrationDate)
 
 	query := squirrel.Select("*").
-		From(usersTableName).
+		From(entities.TableUsers).
 		Where(filters.Condition).
 		PlaceholderFormat(squirrel.Dollar)
 
@@ -96,7 +96,9 @@ func (s *Storage) GetUser(params UsersFindParams) (*entities.User, error) {
 }
 
 func (s *Storage) CreateUser(params UserCreateParams) (*entities.User, error) {
-	columns := []string{"login", "salt", "password_hash"}
+	columns := []string{
+		entities.UserFieldLogin, entities.UserFieldSalt, entities.UserFieldPasswordHash,
+	}
 	values := []any{params.Login, params.Salt, params.PasswordHash}
 
 	if params.Description != nil {
@@ -112,7 +114,7 @@ func (s *Storage) CreateUser(params UserCreateParams) (*entities.User, error) {
 		values = append(values, &params.RegistrationDate)
 	}
 
-	query := squirrel.Insert(usersTableName).
+	query := squirrel.Insert(entities.TableUsers).
 		Columns(columns...).
 		Values(values...).
 		Suffix("RETURNING *").
