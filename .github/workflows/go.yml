@@ -24,6 +24,8 @@ jobs:
           --health-retries 5
 
     steps:
+      - name: Check out into repository
+        uses: actions/checkout@v2
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
         with:
@@ -37,14 +39,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install yandex-pgmigrate
-      - name: Check out into repository
-        uses: actions/checkout@v2
       - name: Start PostgreSQL
         run: sudo service postgresql start
+      - name: Create test DB
+        run: createdb testserverdb
       - name: Run migrations
-        run: |
-          createdb testserverdb
-          make run-migrations
+        run: make run-migrations
       - name: Test
         env:
           DSN: "host=localhost port=5432 user=testserver password=passw0rd dbname=testserverdb sslmode=disable"
