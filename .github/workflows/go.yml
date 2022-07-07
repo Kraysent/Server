@@ -39,6 +39,8 @@ jobs:
           which migrate
       - name: Run migrations
         run: make run-migrations
+      - name: Run go mod tidy
+        run: go mod tidy
       - name: Test
         env:
           DSN: "host=localhost port=5432 user=testserver password=passw0rd dbname=testserverdb sslmode=disable"
