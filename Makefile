@@ -10,4 +10,4 @@ run:
 	go run .
 
 run-migrations: 
-	migrate -path postgre/migrations -database "postgres://localhost:5432/testserverdb?sslmode=disable" -verbose up
+	migrate -path postgre/migrations -database "postgres://localhost:5432/testserverdb?sslmode=disable&user=testserver&password=passw0rd" -verbose up
