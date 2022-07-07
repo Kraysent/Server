@@ -37,7 +37,6 @@ func (s *BaseActionsTestSuite) SetupSuite() {
 	require.NoError(s.T(), err)
 }
 
-
 func (s *BaseActionsTestSuite) SetupTest() {
 	require.NoError(s.T(), s.truncateAll())
 }
